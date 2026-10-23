@@ -14,12 +14,25 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - name: Prepare app files
+        run: |
+          mkdir -p www assets
+          cp index.html manifest.json icon-*.png www/
+          [ -f sw.js ] && cp sw.js www/ || true
+          cp icon-512.png assets/icon-only.png
+          cat > package.json <<'JSON'
+          {"name":"captains-playground","version":"1.0.0","private":true,
+           "devDependencies":{"@capacitor/android":"^6.1.2","@capacitor/assets":"^3.0.5","@capacitor/cli":"^6.1.2","@capacitor/core":"^6.1.2"}}
+          JSON
+          cat > capacitor.config.json <<'JSON'
+          {"appId":"com.captainsplayground.app","appName":"Captain's Playground","webDir":"www","android":{"backgroundColor":"#fbf5e9"}}
+          JSON
       - name: Install Capacitor
-        run: npm install
+        run: npm install --no-audit --no-fund
       - name: Create Android project
         run: |
           npx cap add android
-          npx capacitor-assets generate --android
+          npx capacitor-assets generate --android --iconBackgroundColor '#2a8fb0' --splashBackgroundColor '#fbf5e9' || echo "icon generation skipped"
           npx cap sync android
       - name: Build APK
         working-directory: android
